@@ -21,6 +21,12 @@ const TEMPO_FORA_IDEAL_MS = 30 * 60 * 1000;
 const TEMPO_AQUECEDOR_SEM_SUBIR_MS = 10 * 60 * 1000;
 const OSCILACAO_EXCESSIVA = 1.5;
 
+// Coordenadas Manilha - Itaboraí - RJ
+const LAT = -22.7758;
+const LON = -42.9145;
+const TEMPERATURA_EXTERNA_CRITICA = 20;
+const QUEDA_EXTERNA_CRITICA = 3;
+
 let aquarioStatus = {
   temperature: 26.4,
   heaterOn: false,
@@ -46,13 +52,24 @@ let estadoAlerta = {
   aquecedorFalha: false,
   oscilacao: false,
   foraIdeal: false,
-  chuva: false
+  chuva: false,
+  climaFrio: false,
+  previsaoChuva: false,
+  riscoClimatico: false
 };
 
 let ultimaLeituraTimestamp = Date.now();
 let foraIdealDesde = null;
 let aquecedorLigadoDesde = null;
 let temperaturaQuandoLigou = null;
+
+let climaAtual = {
+  temperaturaExterna: null,
+  vento: null,
+  codigoClima: null,
+  probabilidadeChuva: null,
+  quedaPrevista: null
+};
 
 async function enviarTelegram(mensagem) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
@@ -284,6 +301,104 @@ async function verificarPrevisao() {
   }
 }
 
+async function buscarClimaAvancado() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true&hourly=temperature_2m,precipitation_probability&forecast_days=1&timezone=America%2FSao_Paulo`;
+
+    const resposta = await fetch(url);
+    const dados = await resposta.json();
+
+    const atual = dados.current_weather;
+    const temperaturas = dados.hourly?.temperature_2m || [];
+    const chuvas = dados.hourly?.precipitation_probability || [];
+
+    let probabilidadeMaximaChuva = 0;
+    let quedaPrevista = 0;
+
+    if (temperaturas.length >= 6) {
+      const tempAgora = temperaturas[0];
+      const menorNasProximasHoras = Math.min(...temperaturas.slice(0, 6));
+      quedaPrevista = tempAgora - menorNasProximasHoras;
+    }
+
+    if (chuvas.length >= 6) {
+      probabilidadeMaximaChuva = Math.max(...chuvas.slice(0, 6));
+    }
+
+    climaAtual = {
+      temperaturaExterna: atual?.temperature ?? null,
+      vento: atual?.windspeed ?? null,
+      codigoClima: atual?.weathercode ?? null,
+      probabilidadeChuva: probabilidadeMaximaChuva,
+      quedaPrevista
+    };
+
+    return climaAtual;
+  } catch (erro) {
+    console.log("Erro ao buscar clima avançado:", erro.message);
+    return null;
+  }
+}
+
+async function verificarClimaAvancado() {
+  const clima = await buscarClimaAvancado();
+  if (!clima) return;
+
+  if (
+    clima.temperaturaExterna !== null &&
+    clima.temperaturaExterna <= TEMPERATURA_EXTERNA_CRITICA &&
+    !estadoAlerta.climaFrio
+  ) {
+    await enviarTelegram(
+      `🌬️ FRENTE FRIA DETECTADA\nTemperatura externa: ${clima.temperaturaExterna.toFixed(1)}°C\nO aquário externo pode esfriar nas próximas horas.`
+    );
+    estadoAlerta.climaFrio = true;
+  }
+
+  if (
+    clima.temperaturaExterna !== null &&
+    clima.temperaturaExterna > TEMPERATURA_EXTERNA_CRITICA
+  ) {
+    estadoAlerta.climaFrio = false;
+  }
+
+  if (
+    clima.probabilidadeChuva !== null &&
+    clima.probabilidadeChuva >= 60 &&
+    !estadoAlerta.previsaoChuva
+  ) {
+    await enviarTelegram(
+      `🌧️ PREVISÃO DE CHUVA\nChance de chuva nas próximas horas: ${clima.probabilidadeChuva}%\nMonitore o aquário externo.`
+    );
+    estadoAlerta.previsaoChuva = true;
+  }
+
+  if (
+    clima.probabilidadeChuva !== null &&
+    clima.probabilidadeChuva < 60
+  ) {
+    estadoAlerta.previsaoChuva = false;
+  }
+
+  if (
+    clima.quedaPrevista !== null &&
+    clima.quedaPrevista >= QUEDA_EXTERNA_CRITICA &&
+    !estadoAlerta.riscoClimatico
+  ) {
+    await enviarTelegram(
+      `⚠️ RISCO CLIMÁTICO PARA O AQUÁRIO\nQueda prevista da temperatura externa nas próximas horas: ${clima.quedaPrevista.toFixed(1)}°C\nO aquário externo pode sofrer resfriamento.`
+    );
+    estadoAlerta.riscoClimatico = true;
+  }
+
+  if (
+    clima.quedaPrevista !== null &&
+    clima.quedaPrevista < QUEDA_EXTERNA_CRITICA
+  ) {
+    estadoAlerta.riscoClimatico = false;
+  }
+}
+
 async function verificarTudo() {
   await verificarAlertasPrincipais();
   await verificarPrevisao();
@@ -292,11 +407,16 @@ async function verificarTudo() {
   await verificarAquecedorSemAquecer();
   await verificarOscilacao();
   await verificarChuva();
+  await verificarClimaAvancado();
 }
 
 setInterval(() => {
   verificarSensorOffline();
 }, 60000);
+
+setInterval(() => {
+  verificarClimaAvancado();
+}, 30 * 60 * 1000);
 
 app.get("/", (req, res) => {
   res.json({ status: "Aquario API online" });
@@ -318,6 +438,15 @@ app.get("/api/status", (req, res) => {
 
 app.get("/api/history", (req, res) => {
   res.json(historicoTemperaturas);
+});
+
+app.get("/api/clima", async (req, res) => {
+  const clima = await buscarClimaAvancado();
+
+  res.json({
+    ok: true,
+    clima
+  });
 });
 
 app.get("/api/telegram/test", async (req, res) => {
@@ -374,7 +503,8 @@ app.post("/api/temperature", async (req, res) => {
     message: "Temperatura atualizada com sucesso",
     status: aquarioStatus,
     prediction: analisarTendencia(),
-    alerts: estadoAlerta
+    alerts: estadoAlerta,
+    clima: climaAtual
   });
 });
 
