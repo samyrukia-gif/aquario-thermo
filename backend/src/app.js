@@ -65,5 +65,16 @@ app.post("/api/temperature", (req, res) => {
     history: historicoTemperaturas
   });
 });
+app.get("/api/telegram/test", async (req, res) => {
+  const enviado = await enviarTelegram("✅ Teste do bot do aquário funcionando!");
 
+  if (enviado) {
+    return res.json({ ok: true, message: "Mensagem enviada para o Telegram" });
+  }
+
+  return res.status(500).json({
+    ok: false,
+    message: "Não foi possível enviar a mensagem. Verifique token, chat_id e se você falou com o bot."
+  });
+});
 module.exports = app;
