@@ -12,6 +12,14 @@ let aquarioStatus = {
   targetTemperature: 27
 };
 
+let historicoTemperaturas = [
+  {
+    temperature: 26.4,
+    heaterOn: false,
+    time: new Date().toLocaleTimeString("pt-BR")
+  }
+];
+
 app.get("/", (req, res) => {
   res.json({
     status: "Aquario API online"
@@ -20,6 +28,10 @@ app.get("/", (req, res) => {
 
 app.get("/api/status", (req, res) => {
   res.json(aquarioStatus);
+});
+
+app.get("/api/history", (req, res) => {
+  res.json(historicoTemperaturas);
 });
 
 app.post("/api/temperature", (req, res) => {
@@ -37,9 +49,20 @@ app.post("/api/temperature", (req, res) => {
     aquarioStatus.heaterOn = heaterOn;
   }
 
+  historicoTemperaturas.push({
+    temperature: Number(temperature),
+    heaterOn: heaterOn ?? aquarioStatus.heaterOn,
+    time: new Date().toLocaleTimeString("pt-BR")
+  });
+
+  if (historicoTemperaturas.length > 20) {
+    historicoTemperaturas.shift();
+  }
+
   res.json({
     message: "Temperatura atualizada com sucesso",
-    status: aquarioStatus
+    status: aquarioStatus,
+    history: historicoTemperaturas
   });
 });
 
