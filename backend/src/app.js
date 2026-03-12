@@ -303,7 +303,7 @@ async function verificarPrevisao() {
 
 async function buscarClimaAvancado() {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true&hourly=temperature_2m,precipitation_probability&forecast_days=1&timezone=America%2FSao_Paulo`;
+    const url = https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,windspeed_10m,weathercode&hourly=temperature_2m,precipitation_probability&forecast_days=1&timezone=America%2FSao_Paulo;
 
     const resposta = await fetch(url);
     const dados = await resposta.json();
