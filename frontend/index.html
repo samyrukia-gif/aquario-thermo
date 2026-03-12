@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Painel do Aquário</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#0f172a;
+color:white;
+text-align:center;
+margin-top:120px;
+}
+
+.card{
+background:#1e293b;
+padding:40px;
+border-radius:10px;
+display:inline-block;
+}
+
+.temp{
+font-size:70px;
+margin:20px;
+}
+
+.status{
+font-size:22px;
+opacity:0.9;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>🌡 Temperatura do Aquário</h1>
+
+<div class="temp" id="temp">--</div>
+
+<div class="status" id="heater">Carregando...</div>
+
+</div>
+
+<script>
+
+async function atualizarTemperatura(){
+
+const resposta = await fetch("https://aquario-thermo.onrender.com/api/status")
+
+const dados = await resposta.json()
+
+document.getElementById("temp").innerText =
+dados.temperature + " °C"
+
+document.getElementById("heater").innerText =
+dados.heaterOn ? "🔥 Aquecedor ligado" : "❄ Aquecedor desligado"
+
+}
+
+atualizarTemperatura()
+
+setInterval(atualizarTemperatura,3000)
+
+</script>
+
+</body>
+
+</html>
