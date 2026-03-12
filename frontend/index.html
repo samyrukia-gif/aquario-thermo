@@ -12,15 +12,17 @@
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(180deg, #081224 0%, #0f172a 100%);
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(63, 94, 251, 0.10), transparent 25%),
+        linear-gradient(180deg, #07101d 0%, #0a1324 45%, #08101d 100%);
       color: #ffffff;
       min-height: 100vh;
-      padding: 24px 16px 40px;
+      padding: 24px 14px 40px;
     }
 
     .app {
-      max-width: 960px;
+      max-width: 460px;
       margin: 0 auto;
     }
 
@@ -28,220 +30,199 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
-    .brand-badge {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
+    .brand-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, #1d4ed8, #06b6d4);
-      box-shadow: 0 10px 24px rgba(6, 182, 212, 0.18);
-      font-size: 26px;
+      font-size: 28px;
+      background: linear-gradient(135deg, #173a7a, #123b72 45%, #0aa2b5);
+      box-shadow: 0 8px 28px rgba(0, 195, 255, 0.18);
     }
 
     .brand-text h1 {
-      font-size: 24px;
       margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
     }
 
     .brand-text p {
       margin: 4px 0 0;
-      opacity: 0.72;
-      font-size: 14px;
+      color: rgba(255,255,255,0.60);
+      font-size: 13px;
     }
 
-    .pill {
+    .online-pill {
+      background: rgba(116, 216, 121, 0.16);
+      color: #b7f5bc;
+      border: 1px solid rgba(116, 216, 121, 0.20);
       padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
       font-size: 13px;
-      opacity: 0.95;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 18px;
-    }
-
-    .card {
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 24px;
-      padding: 22px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+    .main-card,
+    .section-card,
+    .mini-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 28px;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.32);
       backdrop-filter: blur(8px);
     }
 
-    .hero {
+    .main-card {
+      padding: 22px;
+      margin-bottom: 18px;
       position: relative;
       overflow: hidden;
-      min-height: 320px;
     }
 
-    .hero::after {
+    .main-card::before {
       content: "";
       position: absolute;
-      inset: auto -40px -60px auto;
-      width: 180px;
-      height: 180px;
+      inset: auto -60px -70px auto;
+      width: 220px;
+      height: 220px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(6, 182, 212, 0.24), transparent 70%);
+      background: radial-gradient(circle, rgba(0,195,255,0.12), transparent 70%);
       pointer-events: none;
     }
 
-    .hero-top {
+    .main-head {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
-      margin-bottom: 18px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
     }
 
-    .hero-title {
-      font-size: 16px;
-      opacity: 0.85;
-      margin: 0;
+    .main-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.94);
     }
 
-    .status-chip {
-      padding: 8px 12px;
+    .status-tag {
       border-radius: 999px;
-      font-size: 12px;
-      font-weight: bold;
-      letter-spacing: 0.2px;
-      transition: 0.3s ease;
-      background: rgba(255, 255, 255, 0.08);
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(116, 216, 121, 0.14);
+      color: #b7f5bc;
+      border: 1px solid rgba(116, 216, 121, 0.18);
     }
 
-    .temp-wrap {
+    .temp-area {
       display: flex;
       align-items: flex-end;
-      justify-content: center;
       gap: 8px;
-      margin: 8px 0 10px;
+      margin: 8px 0 2px;
     }
 
     .temp-value {
-      font-size: 88px;
-      line-height: 0.95;
-      font-weight: bold;
-      letter-spacing: -2px;
-      transition: transform 0.25s ease, color 0.25s ease;
-    }
-
-    .temp-value.bump {
-      transform: scale(1.04);
+      font-size: 82px;
+      line-height: 0.9;
+      font-weight: 800;
+      letter-spacing: -3px;
+      transition: 0.25s ease;
+      color: #aef2ff;
+      text-shadow: 0 0 22px rgba(122, 231, 255, 0.15);
     }
 
     .temp-unit {
-      font-size: 28px;
-      opacity: 0.9;
-      margin-bottom: 10px;
+      font-size: 30px;
+      margin-bottom: 11px;
+      color: rgba(255,255,255,0.9);
     }
 
-    .subtext {
-      text-align: center;
-      opacity: 0.9;
-      font-size: 24px;
-      min-height: 30px;
+    .heater-status {
+      margin-top: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #8fe08f;
+    }
+
+    .updated {
+      margin-top: 6px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.56);
+    }
+
+    .message-box {
+      margin-top: 18px;
+      border-radius: 20px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.45;
+      border: 1px solid rgba(116, 216, 121, 0.15);
+      background: linear-gradient(180deg, rgba(86, 170, 111, 0.14), rgba(86, 170, 111, 0.08));
+      color: #d9f8dc;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .mini-card {
+      padding: 16px;
+      border-radius: 22px;
+    }
+
+    .mini-title {
+      font-size: 14px;
+      color: rgba(255,255,255,0.82);
+      margin-bottom: 8px;
       font-weight: 600;
     }
 
-    .last-update {
-      text-align: center;
-      opacity: 0.55;
-      font-size: 13px;
-      margin-top: 10px;
-    }
-
-    .alert-box {
-      margin-top: 18px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.4;
-      display: none;
-      text-align: left;
-    }
-
-    .alert-low {
-      background: rgba(245, 158, 11, 0.14);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      color: #fde68a;
-    }
-
-    .alert-high {
-      background: rgba(239, 68, 68, 0.14);
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      color: #fecaca;
-    }
-
-    .alert-ok {
-      background: rgba(34, 197, 94, 0.12);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      color: #bbf7d0;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .mini {
-      border-radius: 18px;
-      padding: 18px;
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    .mini-label {
-      font-size: 13px;
-      opacity: 0.72;
-      margin-bottom: 8px;
-    }
-
     .mini-value {
-      font-size: 30px;
-      font-weight: bold;
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 6px;
     }
 
-    .mini small {
-      display: block;
-      margin-top: 6px;
-      opacity: 0.65;
-      font-size: 12px;
+    .mini-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.60);
       line-height: 1.35;
     }
 
-    .chart-card {
-      margin-top: 18px;
+    .section-card {
+      padding: 20px;
     }
 
-    .chart-card h2 {
-      margin: 0 0 12px;
-      font-size: 20px;
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
     }
 
-    .chart-legend {
+    .legend {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
       margin-bottom: 14px;
       font-size: 13px;
-      opacity: 0.9;
+      color: rgba(255,255,255,0.86);
     }
 
     .legend-item {
@@ -250,88 +231,62 @@
       gap: 8px;
     }
 
-    .legend-line {
+    .line {
       width: 18px;
       height: 4px;
-      border-radius: 99px;
+      border-radius: 999px;
     }
 
-    .chart-wrap {
+    .chart-box {
       width: 100%;
-      height: 340px;
+      height: 310px;
     }
 
     canvas {
       width: 100% !important;
       height: 100% !important;
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 12px;
+      background: linear-gradient(180deg, #0f1725, #101a2b);
+      border-radius: 20px;
+      padding: 10px;
     }
 
     .footer-note {
       text-align: center;
-      margin-top: 18px;
-      opacity: 0.5;
+      margin-top: 16px;
       font-size: 12px;
+      color: rgba(255,255,255,0.42);
     }
 
-    .glow-cold {
-      color: #7dd3fc;
-      text-shadow: 0 0 18px rgba(125, 211, 252, 0.2);
+    .cold {
+      color: #8ad8ff !important;
+      text-shadow: 0 0 18px rgba(138,216,255,0.22) !important;
     }
 
-    .glow-normal {
-      color: #ffffff;
-      text-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+    .normal {
+      color: #aef2ff !important;
     }
 
-    .glow-hot {
-      color: #fca5a5;
-      text-shadow: 0 0 18px rgba(252, 165, 165, 0.2);
+    .hot {
+      color: #ffb1b1 !important;
+      text-shadow: 0 0 18px rgba(255,177,177,0.22) !important;
     }
 
-    @media (max-width: 860px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
+    @media (max-width: 420px) {
       .temp-value {
         font-size: 68px;
       }
 
-      .chart-wrap {
-        height: 300px;
-      }
-
-      .stats {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 520px) {
-      body {
-        padding: 18px 12px 28px;
-      }
-
-      .brand-text h1 {
-        font-size: 20px;
-      }
-
-      .temp-value {
-        font-size: 58px;
-      }
-
       .temp-unit {
-        font-size: 22px;
+        font-size: 24px;
       }
 
-      .subtext {
-        font-size: 20px;
-      }
-
-      .stats {
+      .grid-4 {
         grid-template-columns: 1fr;
+      }
+
+      .online-pill {
+        font-size: 12px;
+        padding: 9px 12px;
       }
     }
   </style>
@@ -340,91 +295,89 @@
   <div class="app">
     <div class="topbar">
       <div class="brand">
-        <div class="brand-badge">🐟</div>
+        <div class="brand-icon">🐟</div>
         <div class="brand-text">
           <h1>Aquario Monitor Sam</h1>
           <p>Painel inteligente de temperatura</p>
         </div>
       </div>
-      <div class="pill" id="onlineStatus">Conectando...</div>
+      <div class="online-pill" id="onlineStatus">● Online</div>
     </div>
 
-    <div class="grid">
-      <div class="card hero">
-        <div class="hero-top">
-          <p class="hero-title">🌡️ Temperatura atual da água</p>
-          <div class="status-chip" id="statusChip">Verificando...</div>
-        </div>
-
-        <div class="temp-wrap">
-          <div class="temp-value glow-normal" id="tempValue">--</div>
-          <div class="temp-unit">°C</div>
-        </div>
-
-        <div class="subtext" id="heaterText">Carregando status do aquecedor...</div>
-        <div class="last-update" id="lastUpdate">Última atualização: --</div>
-
-        <div class="alert-box alert-ok" id="alertBox">
-          Sistema dentro da faixa monitorada.
-        </div>
+    <div class="main-card">
+      <div class="main-head">
+        <div class="main-title">🌡️ Temperatura atual da água</div>
+        <div class="status-tag" id="statusTag">Faixa normal</div>
       </div>
 
-      <div class="stats">
-        <div class="mini card">
-          <div class="mini-label">Meta ideal</div>
-          <div class="mini-value">27 °C</div>
-          <small>Faixa desejada do aquário</small>
-        </div>
+      <div class="temp-area">
+        <div class="temp-value normal" id="tempValue">--</div>
+        <div class="temp-unit">°C</div>
+      </div>
 
-        <div class="mini card">
-          <div class="mini-label">Aquecedor</div>
-          <div class="mini-value" id="heaterMini">--</div>
-          <small>Ligado ou desligado</small>
-        </div>
+      <div class="heater-status" id="heaterStatus">Carregando aquecedor...</div>
+      <div class="updated" id="updatedAt">Última atualização: --</div>
 
-        <div class="mini card">
-          <div class="mini-label">Crítico baixo</div>
-          <div class="mini-value">22 °C</div>
-          <small>Abaixo disso gera alerta</small>
-        </div>
-
-        <div class="mini card">
-          <div class="mini-label">Superaquecimento</div>
-          <div class="mini-value">28 °C</div>
-          <small>Acima disso gera alerta</small>
-        </div>
+      <div class="message-box" id="messageBox">
+        ✅ Sistema monitorado. Temperatura dentro da faixa e aquecedor em operação.
       </div>
     </div>
 
-    <div class="card chart-card">
-      <h2>📈 Histórico de Temperatura</h2>
+    <div class="grid-4">
+      <div class="mini-card">
+        <div class="mini-title">Meta ideal</div>
+        <div class="mini-value">27°C</div>
+        <div class="mini-text">Faixa desejada do aquário</div>
+      </div>
 
-      <div class="chart-legend">
+      <div class="mini-card">
+        <div class="mini-title">Aquecedor</div>
+        <div class="mini-value" id="heaterMini">--</div>
+        <div class="mini-text">Ligado ou desligado</div>
+      </div>
+
+      <div class="mini-card">
+        <div class="mini-title">Crítico</div>
+        <div class="mini-value" style="color:#ffd28d;">22°C</div>
+        <div class="mini-text">Abaixo disso gera alerta</div>
+      </div>
+
+      <div class="mini-card">
+        <div class="mini-title">Superaquecimento</div>
+        <div class="mini-value" style="color:#ff9e9e;">28°C</div>
+        <div class="mini-text">Acima disso gera alerta</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">📈 Histórico de Temperatura</div>
+
+      <div class="legend">
         <div class="legend-item">
-          <span class="legend-line" style="background:#2563eb;"></span>
+          <span class="line" style="background:#4aa3ff;"></span>
           Temperatura real
         </div>
         <div class="legend-item">
-          <span class="legend-line" style="background:#22c55e;"></span>
+          <span class="line" style="background:#6be36b;"></span>
           Meta 27 °C
         </div>
         <div class="legend-item">
-          <span class="legend-line" style="background:#f59e0b;"></span>
+          <span class="line" style="background:#ffbe63;"></span>
           Crítico baixo 22 °C
         </div>
         <div class="legend-item">
-          <span class="legend-line" style="background:#ef4444;"></span>
+          <span class="line" style="background:#ff7676;"></span>
           Superaquecimento 28 °C
         </div>
       </div>
 
-      <div class="chart-wrap">
+      <div class="chart-box">
         <canvas id="graficoTemperatura"></canvas>
       </div>
-    </div>
 
-    <div class="footer-note">
-      Atualização automática do painel a cada poucos segundos.
+      <div class="footer-note">
+        Atualização automática do painel a cada poucos segundos.
+      </div>
     </div>
   </div>
 
@@ -435,35 +388,35 @@
     const ALERTA_ALTO = 28;
 
     const tempValue = document.getElementById("tempValue");
-    const heaterText = document.getElementById("heaterText");
+    const heaterStatus = document.getElementById("heaterStatus");
     const heaterMini = document.getElementById("heaterMini");
-    const lastUpdate = document.getElementById("lastUpdate");
+    const updatedAt = document.getElementById("updatedAt");
     const onlineStatus = document.getElementById("onlineStatus");
-    const statusChip = document.getElementById("statusChip");
-    const alertBox = document.getElementById("alertBox");
+    const statusTag = document.getElementById("statusTag");
+    const messageBox = document.getElementById("messageBox");
 
     const ctx = document.getElementById("graficoTemperatura").getContext("2d");
 
-    const grafico = new Chart(ctx, {
+    const chart = new Chart(ctx, {
       type: "line",
       data: {
         labels: [],
         datasets: [
           {
-            label: "Temperatura °C",
+            label: "Temperatura real",
             data: [],
-            borderColor: "#2563eb",
-            backgroundColor: "rgba(37, 99, 235, 0.14)",
+            borderColor: "#56b8ff",
+            backgroundColor: "rgba(86,184,255,0.14)",
             borderWidth: 3,
-            tension: 0.35,
+            tension: 0.38,
             fill: true,
-            pointRadius: 3,
+            pointRadius: 2,
             pointHoverRadius: 5
           },
           {
             label: "Meta 27 °C",
             data: [],
-            borderColor: "#22c55e",
+            borderColor: "#6be36b",
             borderWidth: 2,
             borderDash: [8, 6],
             pointRadius: 0,
@@ -472,7 +425,7 @@
           {
             label: "Crítico baixo 22 °C",
             data: [],
-            borderColor: "#f59e0b",
+            borderColor: "#ffbe63",
             borderWidth: 2,
             borderDash: [8, 6],
             pointRadius: 0,
@@ -481,7 +434,7 @@
           {
             label: "Superaquecimento 28 °C",
             data: [],
-            borderColor: "#ef4444",
+            borderColor: "#ff7676",
             borderWidth: 2,
             borderDash: [8, 6],
             pointRadius: 0,
@@ -497,75 +450,75 @@
         },
         plugins: {
           legend: {
-            labels: {
-              color: "#111827"
-            }
+            display: false
           }
         },
         scales: {
           x: {
             ticks: {
-              color: "#111827"
+              color: "rgba(255,255,255,0.72)"
             },
             grid: {
-              color: "rgba(17,24,39,0.08)"
+              color: "rgba(255,255,255,0.08)"
             }
           },
           y: {
-            beginAtZero: false,
             ticks: {
-              color: "#111827"
+              color: "rgba(255,255,255,0.72)"
             },
             grid: {
-              color: "rgba(17,24,39,0.08)"
+              color: "rgba(255,255,255,0.08)"
             }
           }
         }
       }
     });
 
-    function animarTemperatura(valor) {
-      tempValue.classList.remove("bump");
-      void tempValue.offsetWidth;
-      tempValue.classList.add("bump");
+    function animarTemp(valor) {
+      tempValue.style.transform = "scale(1.05)";
+      setTimeout(() => {
+        tempValue.style.transform = "scale(1)";
+      }, 180);
 
       tempValue.innerText = Number(valor).toFixed(1);
-
-      tempValue.classList.remove("glow-cold", "glow-normal", "glow-hot");
+      tempValue.classList.remove("cold", "normal", "hot");
 
       if (valor < ALERTA_BAIXO) {
-        tempValue.classList.add("glow-cold");
+        tempValue.classList.add("cold");
       } else if (valor > ALERTA_ALTO) {
-        tempValue.classList.add("glow-hot");
+        tempValue.classList.add("hot");
       } else {
-        tempValue.classList.add("glow-normal");
+        tempValue.classList.add("normal");
       }
     }
 
-    function atualizarAlertaVisual(temperatura, heaterOn) {
-      alertBox.style.display = "block";
-      alertBox.classList.remove("alert-low", "alert-high", "alert-ok");
-
+    function atualizarVisual(temperatura, heaterOn) {
       if (temperatura < ALERTA_BAIXO) {
-        alertBox.classList.add("alert-low");
-        alertBox.innerHTML = "🚨 Temperatura abaixo do limite crítico. A água está muito fria e precisa de atenção imediata.";
-        statusChip.innerText = "Frio crítico";
-        statusChip.style.background = "rgba(245, 158, 11, 0.16)";
-        statusChip.style.color = "#fde68a";
+        statusTag.innerText = "Frio crítico";
+        statusTag.style.background = "rgba(255,190,99,0.14)";
+        statusTag.style.color = "#ffd28d";
+        messageBox.style.background = "linear-gradient(180deg, rgba(255,190,99,0.14), rgba(255,190,99,0.08))";
+        messageBox.style.border = "1px solid rgba(255,190,99,0.18)";
+        messageBox.style.color = "#ffe3b0";
+        messageBox.innerText = "🚨 Temperatura abaixo do limite crítico. A água está muito fria e precisa de atenção imediata.";
       } else if (temperatura > ALERTA_ALTO) {
-        alertBox.classList.add("alert-high");
-        alertBox.innerHTML = "🔥 Temperatura acima do limite seguro. Risco de superaquecimento no aquário.";
-        statusChip.innerText = "Superaquecimento";
-        statusChip.style.background = "rgba(239, 68, 68, 0.16)";
-        statusChip.style.color = "#fecaca";
+        statusTag.innerText = "Superaquecimento";
+        statusTag.style.background = "rgba(255,118,118,0.14)";
+        statusTag.style.color = "#ffbcbc";
+        messageBox.style.background = "linear-gradient(180deg, rgba(255,118,118,0.14), rgba(255,118,118,0.08))";
+        messageBox.style.border = "1px solid rgba(255,118,118,0.18)";
+        messageBox.style.color = "#ffd1d1";
+        messageBox.innerText = "🔥 Temperatura acima do limite seguro. Existe risco de superaquecimento no aquário.";
       } else {
-        alertBox.classList.add("alert-ok");
-        alertBox.innerHTML = heaterOn
+        statusTag.innerText = "Faixa normal";
+        statusTag.style.background = "rgba(116,216,121,0.14)";
+        statusTag.style.color = "#b7f5bc";
+        messageBox.style.background = "linear-gradient(180deg, rgba(86,170,111,0.14), rgba(86,170,111,0.08))";
+        messageBox.style.border = "1px solid rgba(86,170,111,0.18)";
+        messageBox.style.color = "#d9f8dc";
+        messageBox.innerText = heaterOn
           ? "✅ Sistema monitorado. Temperatura dentro da faixa e aquecedor em operação."
           : "✅ Sistema monitorado. Temperatura dentro da faixa atual.";
-        statusChip.innerText = "Faixa normal";
-        statusChip.style.background = "rgba(34, 197, 94, 0.16)";
-        statusChip.style.color = "#bbf7d0";
       }
     }
 
@@ -574,37 +527,36 @@
         const resposta = await fetch(`${API_BASE}/api/status`);
         const dados = await resposta.json();
 
-        onlineStatus.innerText = "Online";
-        onlineStatus.style.background = "rgba(34, 197, 94, 0.14)";
-        onlineStatus.style.color = "#bbf7d0";
-
         const temperatura = Number(dados.temperature);
         const heaterOn = !!dados.heaterOn;
 
-        animarTemperatura(temperatura);
+        onlineStatus.innerText = "● Online";
+        onlineStatus.style.background = "rgba(116,216,121,0.16)";
+        onlineStatus.style.color = "#b7f5bc";
 
-        heaterText.innerText = heaterOn
+        animarTemp(temperatura);
+
+        heaterStatus.innerText = heaterOn
           ? "🔥 Aquecedor ligado"
           : "❄️ Aquecedor desligado";
 
+        heaterStatus.style.color = heaterOn ? "#8fe08f" : "#d8e4ff";
         heaterMini.innerText = heaterOn ? "Ligado" : "Desligado";
+        updatedAt.innerText = "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
 
-        lastUpdate.innerText =
-          "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
-
-        atualizarAlertaVisual(temperatura, heaterOn);
-      } catch (erro) {
-        onlineStatus.innerText = "Offline";
-        onlineStatus.style.background = "rgba(239, 68, 68, 0.14)";
-        onlineStatus.style.color = "#fecaca";
-        heaterText.innerText = "Erro ao buscar dados";
-        statusChip.innerText = "Sem conexão";
-        statusChip.style.background = "rgba(239, 68, 68, 0.16)";
-        statusChip.style.color = "#fecaca";
-        alertBox.style.display = "block";
-        alertBox.classList.remove("alert-low", "alert-high", "alert-ok");
-        alertBox.classList.add("alert-high");
-        alertBox.innerHTML = "⚠️ Não foi possível conectar ao servidor agora.";
+        atualizarVisual(temperatura, heaterOn);
+      } catch (error) {
+        onlineStatus.innerText = "● Offline";
+        onlineStatus.style.background = "rgba(255,118,118,0.14)";
+        onlineStatus.style.color = "#ffbcbc";
+        heaterStatus.innerText = "Erro ao buscar dados";
+        statusTag.innerText = "Sem conexão";
+        statusTag.style.background = "rgba(255,118,118,0.14)";
+        statusTag.style.color = "#ffbcbc";
+        messageBox.style.background = "linear-gradient(180deg, rgba(255,118,118,0.14), rgba(255,118,118,0.08))";
+        messageBox.style.border = "1px solid rgba(255,118,118,0.18)";
+        messageBox.style.color = "#ffd1d1";
+        messageBox.innerText = "⚠️ Não foi possível conectar ao servidor agora.";
       }
     }
 
@@ -616,15 +568,14 @@
         const labels = historico.map(item => item.time);
         const temperaturas = historico.map(item => item.temperature);
 
-        grafico.data.labels = labels;
-        grafico.data.datasets[0].data = temperaturas;
-        grafico.data.datasets[1].data = labels.map(() => TEMPERATURA_ALVO);
-        grafico.data.datasets[2].data = labels.map(() => ALERTA_BAIXO);
-        grafico.data.datasets[3].data = labels.map(() => ALERTA_ALTO);
-
-        grafico.update();
-      } catch (erro) {
-        console.log("Erro ao atualizar gráfico:", erro);
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = temperaturas;
+        chart.data.datasets[1].data = labels.map(() => TEMPERATURA_ALVO);
+        chart.data.datasets[2].data = labels.map(() => ALERTA_BAIXO);
+        chart.data.datasets[3].data = labels.map(() => ALERTA_ALTO);
+        chart.update();
+      } catch (error) {
+        console.log("Erro ao carregar gráfico:", error);
       }
     }
 
