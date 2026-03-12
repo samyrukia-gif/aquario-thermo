@@ -13,6 +13,11 @@ const ALERTA_BAIXO = 22;
 const ALERTA_ALTO = 28;
 const TEMPERATURA_ALVO = 27;
 
+// configuração da previsão
+const JANELA_PREVISAO = 5; // quantidade de leituras analisadas
+const QUEDA_RAPIDA = -1.2; // queda total nas últimas leituras
+const SUBIDA_RAPIDA = 1.2; // subida total nas últimas leituras
+
 let aquarioStatus = {
   temperature: 26.4,
   heaterOn: false,
@@ -29,7 +34,9 @@ let historicoTemperaturas = [
 
 let estadoAlerta = {
   frio: false,
-  calor: false
+  calor: false,
+  previsaoFrio: false,
+  previsaoCalor: false
 };
 
 async function enviarTelegram(mensagem) {
@@ -62,9 +69,34 @@ async function enviarTelegram(mensagem) {
   }
 }
 
+function analisarTendencia() {
+  if (historicoTemperaturas.length < JANELA_PREVISAO) {
+    return {
+      preverFrio: false,
+      preverCalor: false,
+      variacao: 0
+    };
+  }
+
+  const ultimas = historicoTemperaturas.slice(-JANELA_PREVISAO);
+  const primeira = Number(ultimas[0].temperature);
+  const ultima = Number(ultimas[ultimas.length - 1].temperature);
+  const variacao = ultima - primeira;
+
+  const preverFrio = variacao <= QUEDA_RAPIDA && ultima > ALERTA_BAIXO;
+  const preverCalor = variacao >= SUBIDA_RAPIDA && ultima < ALERTA_ALTO;
+
+  return {
+    preverFrio,
+    preverCalor,
+    variacao
+  };
+}
+
 async function verificarAlertas() {
   const temperatura = Number(aquarioStatus.temperature);
 
+  // alertas reais
   if (temperatura > ALERTA_ALTO && !estadoAlerta.calor) {
     await enviarTelegram(
       `🚨 ALERTA AQUÁRIO\nTemperatura: ${temperatura.toFixed(1)}°C\nRisco para os peixes: água muito quente.`
@@ -83,6 +115,7 @@ async function verificarAlertas() {
     return;
   }
 
+  // voltou ao normal
   if (
     temperatura >= ALERTA_BAIXO &&
     temperatura <= ALERTA_ALTO &&
@@ -94,6 +127,31 @@ async function verificarAlertas() {
     estadoAlerta.frio = false;
     estadoAlerta.calor = false;
   }
+
+  // análise de tendência
+  const tendencia = analisarTendencia();
+
+  if (tendencia.preverFrio && !estadoAlerta.previsaoFrio) {
+    await enviarTelegram(
+      `⚠️ PREVISÃO DE FRIO\nTemperatura atual: ${temperatura.toFixed(1)}°C\nA temperatura está caindo rapidamente.\nVerifique o aquecedor antes que a água fique crítica.`
+    );
+    estadoAlerta.previsaoFrio = true;
+  }
+
+  if (!tendencia.preverFrio) {
+    estadoAlerta.previsaoFrio = false;
+  }
+
+  if (tendencia.preverCalor && !estadoAlerta.previsaoCalor) {
+    await enviarTelegram(
+      `⚠️ PREVISÃO DE SUPERAQUECIMENTO\nTemperatura atual: ${temperatura.toFixed(1)}°C\nA temperatura está subindo rapidamente.\nVerifique o ambiente, iluminação ou aquecimento.`
+    );
+    estadoAlerta.previsaoCalor = true;
+  }
+
+  if (!tendencia.preverCalor) {
+    estadoAlerta.previsaoCalor = false;
+  }
 }
 
 app.get("/", (req, res) => {
@@ -101,7 +159,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/status", (req, res) => {
-  res.json(aquarioStatus);
+  const tendencia = analisarTendencia();
+
+  res.json({
+    ...aquarioStatus,
+    prediction: {
+      preverFrio: tendencia.preverFrio,
+      preverCalor: tendencia.preverCalor,
+      variacao: tendencia.variacao
+    }
+  });
 });
 
 app.get("/api/history", (req, res) => {
@@ -153,7 +220,8 @@ app.post("/api/temperature", async (req, res) => {
 
   res.json({
     message: "Temperatura atualizada com sucesso",
-    status: aquarioStatus
+    status: aquarioStatus,
+    prediction: analisarTendencia()
   });
 });
 
