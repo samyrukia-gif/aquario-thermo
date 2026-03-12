@@ -13,7 +13,6 @@ const ALERTA_BAIXO = 22;
 const ALERTA_ALTO = 28;
 const TEMPERATURA_ALVO = 27;
 
-// regras inteligentes
 const JANELA_PREVISAO = 5;
 const QUEDA_RAPIDA = -1.2;
 const SUBIDA_RAPIDA = 1.2;
