@@ -1,107 +1,407 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel do Aquário</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aquario Monitor Sam</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body{
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background:#0f172a;
-      color:white;
-      margin:0;
-      padding:40px 20px;
-      text-align:center;
+      background: linear-gradient(180deg, #081224 0%, #0f172a 100%);
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 24px 16px 40px;
     }
 
-    .container{
-      max-width:950px;
-      margin:0 auto;
+    .app {
+      max-width: 960px;
+      margin: 0 auto;
     }
 
-    .card{
-      background:#1e293b;
-      padding:30px;
-      border-radius:16px;
-      margin-bottom:24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
 
-    .temp{
-      font-size:72px;
-      margin:20px 0 10px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .status{
-      font-size:22px;
-      opacity:0.95;
-      margin-bottom:8px;
+    .brand-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #1d4ed8, #06b6d4);
+      box-shadow: 0 10px 24px rgba(6, 182, 212, 0.18);
+      font-size: 22px;
     }
 
-    .subtitle{
-      opacity:0.8;
-      margin-top:8px;
+    .brand-text h1 {
+      font-size: 20px;
+      margin: 0;
     }
 
-    .legend-box{
-      display:flex;
-      justify-content:center;
-      gap:18px;
-      flex-wrap:wrap;
-      margin-top:14px;
-      font-size:14px;
-      opacity:0.9;
+    .brand-text p {
+      margin: 2px 0 0;
+      opacity: 0.7;
+      font-size: 13px;
     }
 
-    .legend-item{
-      display:flex;
-      align-items:center;
-      gap:8px;
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+      opacity: 0.9;
     }
 
-    .dot{
-      width:14px;
-      height:14px;
-      border-radius:50%;
-      display:inline-block;
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
     }
 
-    canvas{
-      background:white;
-      border-radius:12px;
-      padding:12px;
+    .card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -60px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.24), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .hero-title {
+      font-size: 16px;
+      opacity: 0.85;
+      margin: 0;
+    }
+
+    .status-chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 0.2px;
+      transition: 0.3s ease;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .temp-wrap {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px 0 16px;
+    }
+
+    .temp-value {
+      font-size: 84px;
+      line-height: 0.95;
+      font-weight: bold;
+      letter-spacing: -2px;
+      transition: transform 0.25s ease, color 0.25s ease;
+    }
+
+    .temp-value.bump {
+      transform: scale(1.04);
+    }
+
+    .temp-unit {
+      font-size: 28px;
+      opacity: 0.9;
+      margin-bottom: 10px;
+    }
+
+    .subtext {
+      text-align: center;
+      opacity: 0.82;
+      font-size: 15px;
+      min-height: 22px;
+    }
+
+    .last-update {
+      text-align: center;
+      opacity: 0.55;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .mini {
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .mini-label {
+      font-size: 13px;
+      opacity: 0.72;
+      margin-bottom: 8px;
+    }
+
+    .mini-value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .mini small {
+      display: block;
+      margin-top: 6px;
+      opacity: 0.65;
+      font-size: 12px;
+    }
+
+    .chart-card h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-line {
+      width: 18px;
+      height: 4px;
+      border-radius: 99px;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      height: 340px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 12px;
+    }
+
+    .alert-box {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.4;
+      display: none;
+      text-align: left;
+    }
+
+    .alert-low {
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fde68a;
+    }
+
+    .alert-high {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fecaca;
+    }
+
+    .alert-ok {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #bbf7d0;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 18px;
+      opacity: 0.5;
+      font-size: 12px;
+    }
+
+    .glow-cold {
+      color: #7dd3fc;
+      text-shadow: 0 0 18px rgba(125, 211, 252, 0.2);
+    }
+
+    .glow-normal {
+      color: #ffffff;
+      text-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+    }
+
+    .glow-hot {
+      color: #fca5a5;
+      text-shadow: 0 0 18px rgba(252, 165, 165, 0.2);
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .temp-value {
+        font-size: 68px;
+      }
+
+      .chart-wrap {
+        height: 300px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h1>🌡 Temperatura do Aquário</h1>
-      <div class="temp" id="temp">--</div>
-      <div class="status" id="heater">Carregando...</div>
-      <div class="subtitle" id="updatedAt">Atualizando...</div>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">🐟</div>
+        <div class="brand-text">
+          <h1>Aquario Monitor Sam</h1>
+          <p>Painel inteligente de temperatura</p>
+        </div>
+      </div>
+      <div class="pill" id="onlineStatus">Conectando...</div>
+    </div>
 
-      <div class="legend-box">
-        <div class="legend-item"><span class="dot" style="background:#2563eb;"></span> Temperatura real</div>
-        <div class="legend-item"><span class="dot" style="background:#22c55e;"></span> Meta 27 °C</div>
-        <div class="legend-item"><span class="dot" style="background:#f59e0b;"></span> Crítico baixo 22 °C</div>
-        <div class="legend-item"><span class="dot" style="background:#ef4444;"></span> Superaquecimento 28 °C</div>
+    <div class="grid">
+      <div class="card hero">
+        <div class="hero-top">
+          <p class="hero-title">🌡️ Temperatura atual da água</p>
+          <div class="status-chip" id="statusChip">Verificando...</div>
+        </div>
+
+        <div class="temp-wrap">
+          <div class="temp-value glow-normal" id="tempValue">--</div>
+          <div class="temp-unit">°C</div>
+        </div>
+
+        <div class="subtext" id="heaterText">Carregando status do aquecedor...</div>
+        <div class="last-update" id="lastUpdate">Última atualização: --</div>
+
+        <div class="alert-box alert-ok" id="alertBox">
+          Sistema dentro da faixa monitorada.
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="mini card">
+          <div class="mini-label">Meta ideal</div>
+          <div class="mini-value">27 °C</div>
+          <small>Faixa desejada do aquário</small>
+        </div>
+
+        <div class="mini card">
+          <div class="mini-label">Aquecedor</div>
+          <div class="mini-value" id="heaterMini">--</div>
+          <small>Ligado ou desligado</small>
+        </div>
+
+        <div class="mini card">
+          <div class="mini-label">Crítico baixo</div>
+          <div class="mini-value">22 °C</div>
+          <small>Abaixo disso gera alerta</small>
+        </div>
+
+        <div class="mini card">
+          <div class="mini-label">Superaquecimento</div>
+          <div class="mini-value">28 °C</div>
+          <small>Acima disso gera alerta</small>
+        </div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card chart-card" style="margin-top:18px;">
       <h2>📈 Histórico de Temperatura</h2>
-      <canvas id="graficoTemperatura"></canvas>
+
+      <div class="chart-legend">
+        <div class="legend-item">
+          <span class="legend-line" style="background:#2563eb;"></span>
+          Temperatura real
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="background:#22c55e;"></span>
+          Meta 27 °C
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="background:#f59e0b;"></span>
+          Crítico baixo 22 °C
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="background:#ef4444;"></span>
+          Superaquecimento 28 °C
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="graficoTemperatura"></canvas>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Atualização automática do painel a cada poucos segundos.
     </div>
   </div>
 
   <script>
     const API_BASE = "https://aquario-thermo.onrender.com";
-
     const TEMPERATURA_ALVO = 27;
     const ALERTA_BAIXO = 22;
     const ALERTA_ALTO = 28;
+
+    const tempValue = document.getElementById("tempValue");
+    const heaterText = document.getElementById("heaterText");
+    const heaterMini = document.getElementById("heaterMini");
+    const lastUpdate = document.getElementById("lastUpdate");
+    const onlineStatus = document.getElementById("onlineStatus");
+    const statusChip = document.getElementById("statusChip");
+    const alertBox = document.getElementById("alertBox");
 
     const ctx = document.getElementById("graficoTemperatura").getContext("2d");
 
@@ -114,10 +414,12 @@
             label: "Temperatura °C",
             data: [],
             borderColor: "#2563eb",
-            backgroundColor: "rgba(37, 99, 235, 0.15)",
+            backgroundColor: "rgba(37, 99, 235, 0.14)",
             borderWidth: 3,
-            tension: 0.3,
-            fill: true
+            tension: 0.35,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 5
           },
           {
             label: "Meta 27 °C",
@@ -126,7 +428,6 @@
             borderWidth: 2,
             borderDash: [8, 6],
             pointRadius: 0,
-            tension: 0,
             fill: false
           },
           {
@@ -136,7 +437,6 @@
             borderWidth: 2,
             borderDash: [8, 6],
             pointRadius: 0,
-            tension: 0,
             fill: false
           },
           {
@@ -146,13 +446,16 @@
             borderWidth: 2,
             borderDash: [8, 6],
             pointRadius: 0,
-            tension: 0,
             fill: false
           }
         ]
       },
       options: {
+        maintainAspectRatio: false,
         responsive: true,
+        animation: {
+          duration: 500
+        },
         plugins: {
           legend: {
             labels: {
@@ -164,43 +467,126 @@
           x: {
             ticks: {
               color: "#111827"
+            },
+            grid: {
+              color: "rgba(17,24,39,0.08)"
             }
           },
           y: {
             beginAtZero: false,
             ticks: {
               color: "#111827"
+            },
+            grid: {
+              color: "rgba(17,24,39,0.08)"
             }
           }
         }
       }
     });
 
-    async function atualizarStatus() {
-      const resposta = await fetch(`${API_BASE}/api/status`);
-      const dados = await resposta.json();
+    function animarTemperatura(valor) {
+      tempValue.classList.remove("bump");
+      void tempValue.offsetWidth;
+      tempValue.classList.add("bump");
 
-      document.getElementById("temp").innerText = dados.temperature + " °C";
-      document.getElementById("heater").innerText =
-        dados.heaterOn ? "🔥 Aquecedor ligado" : "❄ Aquecedor desligado";
-      document.getElementById("updatedAt").innerText =
-        "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
+      tempValue.innerText = Number(valor).toFixed(1);
+
+      tempValue.classList.remove("glow-cold", "glow-normal", "glow-hot");
+
+      if (valor < ALERTA_BAIXO) {
+        tempValue.classList.add("glow-cold");
+      } else if (valor > ALERTA_ALTO) {
+        tempValue.classList.add("glow-hot");
+      } else {
+        tempValue.classList.add("glow-normal");
+      }
+    }
+
+    function atualizarAlertaVisual(temperatura, heaterOn) {
+      alertBox.style.display = "block";
+      alertBox.classList.remove("alert-low", "alert-high", "alert-ok");
+
+      if (temperatura < ALERTA_BAIXO) {
+        alertBox.classList.add("alert-low");
+        alertBox.innerHTML = "🚨 Temperatura abaixo do limite crítico. A água está muito fria e precisa de atenção imediata.";
+        statusChip.innerText = "Frio crítico";
+        statusChip.style.background = "rgba(245, 158, 11, 0.16)";
+        statusChip.style.color = "#fde68a";
+      } else if (temperatura > ALERTA_ALTO) {
+        alertBox.classList.add("alert-high");
+        alertBox.innerHTML = "🔥 Temperatura acima do limite seguro. Risco de superaquecimento no aquário.";
+        statusChip.innerText = "Superaquecimento";
+        statusChip.style.background = "rgba(239, 68, 68, 0.16)";
+        statusChip.style.color = "#fecaca";
+      } else {
+        alertBox.classList.add("alert-ok");
+        alertBox.innerHTML = heaterOn
+          ? "✅ Sistema monitorado. Temperatura dentro da faixa e aquecedor em operação."
+          : "✅ Sistema monitorado. Temperatura dentro da faixa atual.";
+        statusChip.innerText = "Faixa normal";
+        statusChip.style.background = "rgba(34, 197, 94, 0.16)";
+        statusChip.style.color = "#bbf7d0";
+      }
+    }
+
+    async function atualizarStatus() {
+      try {
+        const resposta = await fetch(${API_BASE}/api/status);
+        const dados = await resposta.json();
+
+        onlineStatus.innerText = "Online";
+        onlineStatus.style.background = "rgba(34, 197, 94, 0.14)";
+        onlineStatus.style.color = "#bbf7d0";
+
+        const temperatura = Number(dados.temperature);
+        const heaterOn = !!dados.heaterOn;
+
+        animarTemperatura(temperatura);
+
+        heaterText.innerText = heaterOn
+          ? "🔥 Aquecedor ligado"
+          : "❄️ Aquecedor desligado";
+
+        heaterMini.innerText = heaterOn ? "Ligado" : "Desligado";
+
+        lastUpdate.innerText =
+          "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
+
+        atualizarAlertaVisual(temperatura, heaterOn);
+      } catch (erro) {
+        onlineStatus.innerText = "Offline";
+        onlineStatus.style.background = "rgba(239, 68, 68, 0.14)";
+        onlineStatus.style.color = "#fecaca";
+        heaterText.innerText = "Erro ao buscar dados";
+        statusChip.innerText = "Sem conexão";
+        statusChip.style.background = "rgba(239, 68, 68, 0.16)";
+        statusChip.style.color = "#fecaca";
+        alertBox.style.display = "block";
+        alertBox.classList.remove("alert-low", "alert-high", "alert-ok");
+        alertBox.classList.add("alert-high");
+        alertBox.innerHTML = "⚠️ Não foi possível conectar ao servidor agora.";
+      }
     }
 
     async function atualizarGrafico() {
-      const resposta = await fetch(`${API_BASE}/api/history`);
-      const historico = await resposta.json();
+      try {
+        const resposta = await fetch(${API_BASE}/api/history);
+        const historico = await resposta.json();
 
-      const labels = historico.map(item => item.time);
-      const temperaturas = historico.map(item => item.temperature);
+        const labels = historico.map(item => item.time);
+        const temperaturas = historico.map(item => item.temperature);
 
-      grafico.data.labels = labels;
-      grafico.data.datasets[0].data = temperaturas;
-      grafico.data.datasets[1].data = labels.map(() => TEMPERATURA_ALVO);
-      grafico.data.datasets[2].data = labels.map(() => ALERTA_BAIXO);
-      grafico.data.datasets[3].data = labels.map(() => ALERTA_ALTO);
+        grafico.data.labels = labels;
+        grafico.data.datasets[0].data = temperaturas;
+        grafico.data.datasets[1].data = labels.map(() => TEMPERATURA_ALVO);
+        grafico.data.datasets[2].data = labels.map(() => ALERTA_BAIXO);
+        grafico.data.datasets[3].data = labels.map(() => ALERTA_ALTO);
 
-      grafico.update();
+        grafico.update();
+      } catch (erro) {
+        console.log("Erro ao atualizar gráfico:", erro);
+      }
     }
 
     async function atualizarTudo() {
