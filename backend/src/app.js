@@ -13,10 +13,14 @@ const ALERTA_BAIXO = 22;
 const ALERTA_ALTO = 28;
 const TEMPERATURA_ALVO = 27;
 
-// configuração da previsão
-const JANELA_PREVISAO = 5; // quantidade de leituras analisadas
-const QUEDA_RAPIDA = -1.2; // queda total nas últimas leituras
-const SUBIDA_RAPIDA = 1.2; // subida total nas últimas leituras
+// regras inteligentes
+const JANELA_PREVISAO = 5;
+const QUEDA_RAPIDA = -1.2;
+const SUBIDA_RAPIDA = 1.2;
+const TEMPO_MAX_SEM_LEITURA_MS = 5 * 60 * 1000;
+const TEMPO_FORA_IDEAL_MS = 30 * 60 * 1000;
+const TEMPO_AQUECEDOR_SEM_SUBIR_MS = 10 * 60 * 1000;
+const OSCILACAO_EXCESSIVA = 1.5;
 
 let aquarioStatus = {
   temperature: 26.4,
@@ -28,7 +32,8 @@ let historicoTemperaturas = [
   {
     temperature: 26.4,
     heaterOn: false,
-    time: new Date().toLocaleTimeString("pt-BR")
+    time: new Date().toLocaleTimeString("pt-BR"),
+    timestamp: Date.now()
   }
 ];
 
@@ -36,8 +41,17 @@ let estadoAlerta = {
   frio: false,
   calor: false,
   previsaoFrio: false,
-  previsaoCalor: false
+  previsaoCalor: false,
+  sensorOffline: false,
+  aquecedorFalha: false,
+  oscilacao: false,
+  foraIdeal: false
 };
+
+let ultimaLeituraTimestamp = Date.now();
+let foraIdealDesde = null;
+let aquecedorLigadoDesde = null;
+let temperaturaQuandoLigou = null;
 
 async function enviarTelegram(mensagem) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
@@ -83,20 +97,116 @@ function analisarTendencia() {
   const ultima = Number(ultimas[ultimas.length - 1].temperature);
   const variacao = ultima - primeira;
 
-  const preverFrio = variacao <= QUEDA_RAPIDA && ultima > ALERTA_BAIXO;
-  const preverCalor = variacao >= SUBIDA_RAPIDA && ultima < ALERTA_ALTO;
-
   return {
-    preverFrio,
-    preverCalor,
+    preverFrio: variacao <= QUEDA_RAPIDA && ultima > ALERTA_BAIXO,
+    preverCalor: variacao >= SUBIDA_RAPIDA && ultima < ALERTA_ALTO,
     variacao
   };
 }
 
-async function verificarAlertas() {
+function detectarOscilacaoExcessiva() {
+  if (historicoTemperaturas.length < JANELA_PREVISAO) {
+    return false;
+  }
+
+  const ultimas = historicoTemperaturas.slice(-JANELA_PREVISAO);
+  const temperaturas = ultimas.map(item => Number(item.temperature));
+  const max = Math.max(...temperaturas);
+  const min = Math.min(...temperaturas);
+
+  return (max - min) >= OSCILACAO_EXCESSIVA;
+}
+
+async function verificarSensorOffline() {
+  const agora = Date.now();
+  const semLeitura = agora - ultimaLeituraTimestamp > TEMPO_MAX_SEM_LEITURA_MS;
+
+  if (semLeitura && !estadoAlerta.sensorOffline) {
+    await enviarTelegram(
+      `🚨 SENSOR OFFLINE\nO sistema está sem receber leitura de temperatura há vários minutos.\nVerifique o sensor ou a conexão da ESP32.`
+    );
+    estadoAlerta.sensorOffline = true;
+  }
+
+  if (!semLeitura) {
+    estadoAlerta.sensorOffline = false;
+  }
+}
+
+async function verificarTemperaturaForaIdeal() {
+  const temperatura = Number(aquarioStatus.temperature);
+  const foraIdeal = temperatura < 26 || temperatura > 27.5;
+
+  if (foraIdeal) {
+    if (!foraIdealDesde) {
+      foraIdealDesde = Date.now();
+    }
+
+    const tempoFora = Date.now() - foraIdealDesde;
+
+    if (tempoFora >= TEMPO_FORA_IDEAL_MS && !estadoAlerta.foraIdeal) {
+      await enviarTelegram(
+        `⚠️ TEMPERATURA FORA DO IDEAL\nTemperatura atual: ${temperatura.toFixed(1)}°C\nO aquário está fora da faixa ideal há muito tempo.`
+      );
+      estadoAlerta.foraIdeal = true;
+    }
+  } else {
+    foraIdealDesde = null;
+    estadoAlerta.foraIdeal = false;
+  }
+}
+
+async function verificarAquecedorSemAquecer() {
   const temperatura = Number(aquarioStatus.temperature);
 
-  // alertas reais
+  if (aquarioStatus.heaterOn) {
+    if (!aquecedorLigadoDesde) {
+      aquecedorLigadoDesde = Date.now();
+      temperaturaQuandoLigou = temperatura;
+    }
+
+    const tempoLigado = Date.now() - aquecedorLigadoDesde;
+    const subiu = temperatura > temperaturaQuandoLigou + 0.2;
+
+    if (
+      tempoLigado >= TEMPO_AQUECEDOR_SEM_SUBIR_MS &&
+      !subiu &&
+      !estadoAlerta.aquecedorFalha
+    ) {
+      await enviarTelegram(
+        `🚨 POSSÍVEL FALHA NO AQUECEDOR\nTemperatura atual: ${temperatura.toFixed(1)}°C\nO aquecedor está ligado há bastante tempo, mas a temperatura não sobe.`
+      );
+      estadoAlerta.aquecedorFalha = true;
+    }
+
+    if (subiu) {
+      estadoAlerta.aquecedorFalha = false;
+    }
+  } else {
+    aquecedorLigadoDesde = null;
+    temperaturaQuandoLigou = null;
+    estadoAlerta.aquecedorFalha = false;
+  }
+}
+
+async function verificarOscilacao() {
+  const oscilando = detectarOscilacaoExcessiva();
+
+  if (oscilando && !estadoAlerta.oscilacao) {
+    await enviarTelegram(
+      `⚠️ OSCILAÇÃO DE TEMPERATURA\nA temperatura está variando demais em pouco tempo.\nVerifique sensor, posição do aquecedor ou circulação da água.`
+    );
+    estadoAlerta.oscilacao = true;
+  }
+
+  if (!oscilando) {
+    estadoAlerta.oscilacao = false;
+  }
+}
+
+async function verificarAlertasPrincipais() {
+  const temperatura = Number(aquarioStatus.temperature);
+
   if (temperatura > ALERTA_ALTO && !estadoAlerta.calor) {
     await enviarTelegram(
       `🚨 ALERTA AQUÁRIO\nTemperatura: ${temperatura.toFixed(1)}°C\nRisco para os peixes: água muito quente.`
@@ -115,7 +225,6 @@ async function verificarAlertas() {
     return;
   }
 
-  // voltou ao normal
   if (
     temperatura >= ALERTA_BAIXO &&
     temperatura <= ALERTA_ALTO &&
@@ -127,8 +236,10 @@ async function verificarAlertas() {
     estadoAlerta.frio = false;
     estadoAlerta.calor = false;
   }
+}
 
-  // análise de tendência
+async function verificarPrevisao() {
+  const temperatura = Number(aquarioStatus.temperature);
   const tendencia = analisarTendencia();
 
   if (tendencia.preverFrio && !estadoAlerta.previsaoFrio) {
@@ -154,6 +265,19 @@ async function verificarAlertas() {
   }
 }
 
+async function verificarTudo() {
+  await verificarAlertasPrincipais();
+  await verificarPrevisao();
+  await verificarSensorOffline();
+  await verificarTemperaturaForaIdeal();
+  await verificarAquecedorSemAquecer();
+  await verificarOscilacao();
+}
+
+setInterval(() => {
+  verificarSensorOffline();
+}, 60000);
+
 app.get("/", (req, res) => {
   res.json({ status: "Aquario API online" });
 });
@@ -167,7 +291,8 @@ app.get("/api/status", (req, res) => {
       preverFrio: tendencia.preverFrio,
       preverCalor: tendencia.preverCalor,
       variacao: tendencia.variacao
-    }
+    },
+    alerts: estadoAlerta
   });
 });
 
@@ -206,22 +331,26 @@ app.post("/api/temperature", async (req, res) => {
     aquarioStatus.heaterOn = heaterOn;
   }
 
+  ultimaLeituraTimestamp = Date.now();
+
   historicoTemperaturas.push({
     temperature: Number(temperature),
     heaterOn: heaterOn ?? aquarioStatus.heaterOn,
-    time: new Date().toLocaleTimeString("pt-BR")
+    time: new Date().toLocaleTimeString("pt-BR"),
+    timestamp: Date.now()
   });
 
-  if (historicoTemperaturas.length > 30) {
+  if (historicoTemperaturas.length > 50) {
     historicoTemperaturas.shift();
   }
 
-  await verificarAlertas();
+  await verificarTudo();
 
   res.json({
     message: "Temperatura atualizada com sucesso",
     status: aquarioStatus,
-    prediction: analisarTendencia()
+    prediction: analisarTendencia(),
+    alerts: estadoAlerta
   });
 });
 
