@@ -580,8 +580,8 @@
       <div class="mini-grid">
         <div class="mini-card mini-blue">
           <div class="mini-title">Temperatura real</div>
-          <div class="mini-value">27°C</div>
-          <div class="mini-desc">Faixa desejada do aquário</div>
+          <div class="mini-value" id="sensorTempValue">--°C</div>
+          <div class="mini-desc">Leitura atual do sensor</div>
         </div>
 
         <div class="mini-card mini-green">
@@ -641,6 +641,7 @@
     const tempValue = document.getElementById("tempValue");
     const heaterStatus = document.getElementById("heaterStatus");
     const heaterMini = document.getElementById("heaterMini");
+    const sensorTempValue = document.getElementById("sensorTempValue");
     const updatedAt = document.getElementById("updatedAt");
     const onlineStatus = document.getElementById("onlineStatus");
     const statusTag = document.getElementById("statusTag");
@@ -651,6 +652,18 @@
     const rainStatusDesc = document.getElementById("rainStatusDesc");
     const rainBanner = document.getElementById("rainBanner");
     const rainIcon = document.getElementById("rainIcon");
+
+    function normalizarParaCelsius(valor) {
+      const numero = Number(valor);
+
+      if (Number.isNaN(numero)) return 0;
+
+      if (numero > 45) {
+        return (numero - 32) * 5 / 9;
+      }
+
+      return numero;
+    }
 
     const ctx = document.getElementById("graficoTemperatura").getContext("2d");
 
@@ -737,7 +750,10 @@
     }
 
     function atualizarVisual(temperatura, heaterOn) {
-      tempValue.innerText = Number(temperatura).toFixed(1);
+      const temperaturaC = normalizarParaCelsius(temperatura);
+
+      tempValue.innerText = temperaturaC.toFixed(1);
+      sensorTempValue.innerText = temperaturaC.toFixed(1) + "°C";
 
       heaterStatus.innerText = heaterOn
         ? "🔥 Aquecedor ligado"
@@ -748,20 +764,14 @@
       updatedAt.innerText =
         "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
 
-      if (temperatura < ALERTA_BAIXO) {
+      if (temperaturaC < ALERTA_BAIXO) {
         statusTag.innerText = "Frio crítico";
         statusTag.style.background = "linear-gradient(180deg, rgba(255,191,115,0.18), rgba(255,191,115,0.10))";
         statusTag.style.color = "#ffe0b3";
         messageBox.innerText = "🚨 Temperatura abaixo do limite crítico. A água está muito fria e precisa de atenção imediata.";
         messageBox.style.background = "linear-gradient(180deg, rgba(255,191,115,0.14), rgba(255,191,115,0.08))";
         messageBox.style.color = "#ffe3b9";
-      } else if (temperatura > ALERTA_ALTO) {
+      } else if (temperaturaC > ALERTA_ALTO) {
         statusTag.innerText = "Superaquecimento";
         statusTag.style.background = "linear-gradient(180deg, rgba(255,135,135,0.18), rgba(255,135,135,0.10))";
-        statusTag.style.color = "#ffd1d1";
-        messageBox.innerText = "🔥 Temperatura acima do limite seguro. Existe risco de superaquecimento no aquário.";
-        messageBox.style.background = "linear-gradient(180deg, rgba(255,135,135,0.14), rgba(255,135,135,0.08))";
-        messageBox.style.color = "#ffd3d3";
-      } else {
-        statusTag.innerText = "Faixa normal";
-        statusTag.style.background = "linear-gradient(180deg, rgba(123,219,128,0
+        statusTag.s
