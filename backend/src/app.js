@@ -11,11 +11,12 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 const ALERTA_BAIXO = 22;
 const ALERTA_ALTO = 28;
+const TEMPERATURA_ALVO = 27;
 
 let aquarioStatus = {
   temperature: 26.4,
   heaterOn: false,
-  targetTemperature: 27
+  targetTemperature: TEMPERATURA_ALVO
 };
 
 let historicoTemperaturas = [
@@ -26,9 +27,9 @@ let historicoTemperaturas = [
   }
 ];
 
-let ultimoAlerta = {
-  baixo: false,
-  alto: false
+let estadoAlerta = {
+  frio: false,
+  calor: false
 };
 
 async function enviarTelegram(mensagem) {
@@ -38,23 +39,25 @@ async function enviarTelegram(mensagem) {
   }
 
   try {
-    const resposta = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: mensagem
-      })
-    });
+    const resposta = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: mensagem
+        })
+      }
+    );
 
     const dados = await resposta.json();
-    console.log("Resposta do Telegram:", dados);
-
+    console.log("Resposta Telegram:", dados);
     return dados.ok === true;
   } catch (erro) {
-    console.error("Erro ao enviar mensagem:", erro.message);
+    console.error("Erro ao enviar Telegram:", erro.message);
     return false;
   }
 }
@@ -62,22 +65,34 @@ async function enviarTelegram(mensagem) {
 async function verificarAlertas() {
   const temperatura = Number(aquarioStatus.temperature);
 
-  if (temperatura < ALERTA_BAIXO && !ultimoAlerta.baixo) {
-    await enviarTelegram(`🚨 Alerta crítico! Temperatura muito baixa: ${temperatura} °C`);
-    ultimoAlerta.baixo = true;
+  if (temperatura > ALERTA_ALTO && !estadoAlerta.calor) {
+    await enviarTelegram(
+      `🚨 ALERTA AQUÁRIO\nTemperatura: ${temperatura.toFixed(1)}°C\nRisco para os peixes: água muito quente.`
+    );
+    estadoAlerta.calor = true;
+    estadoAlerta.frio = false;
+    return;
   }
 
-  if (temperatura >= ALERTA_BAIXO) {
-    ultimoAlerta.baixo = false;
+  if (temperatura < ALERTA_BAIXO && !estadoAlerta.frio) {
+    await enviarTelegram(
+      `🥶 ALERTA AQUÁRIO\nTemperatura: ${temperatura.toFixed(1)}°C\nRisco para os peixes: água muito fria.`
+    );
+    estadoAlerta.frio = true;
+    estadoAlerta.calor = false;
+    return;
   }
 
-  if (temperatura > ALERTA_ALTO && !ultimoAlerta.alto) {
-    await enviarTelegram(`🔥 Alerta de superaquecimento! Temperatura muito alta: ${temperatura} °C`);
-    ultimoAlerta.alto = true;
-  }
-
-  if (temperatura <= ALERTA_ALTO) {
-    ultimoAlerta.alto = false;
+  if (
+    temperatura >= ALERTA_BAIXO &&
+    temperatura <= ALERTA_ALTO &&
+    (estadoAlerta.frio || estadoAlerta.calor)
+  ) {
+    await enviarTelegram(
+      `✅ AQUÁRIO ESTABILIZADO\nTemperatura: ${temperatura.toFixed(1)}°C\nA água voltou para a faixa segura.`
+    );
+    estadoAlerta.frio = false;
+    estadoAlerta.calor = false;
   }
 }
 
@@ -105,7 +120,7 @@ app.get("/api/telegram/test", async (req, res) => {
 
   return res.status(500).json({
     ok: false,
-    message: "Não foi possível enviar a mensagem. Verifique token, chat_id e se você falou com o bot."
+    message: "Não foi possível enviar a mensagem."
   });
 });
 
@@ -130,7 +145,7 @@ app.post("/api/temperature", async (req, res) => {
     time: new Date().toLocaleTimeString("pt-BR")
   });
 
-  if (historicoTemperaturas.length > 20) {
+  if (historicoTemperaturas.length > 30) {
     historicoTemperaturas.shift();
   }
 
