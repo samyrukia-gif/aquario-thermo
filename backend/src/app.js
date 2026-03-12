@@ -25,6 +25,7 @@ const OSCILACAO_EXCESSIVA = 1.5;
 let aquarioStatus = {
   temperature: 26.4,
   heaterOn: false,
+  rainDetected: false,
   targetTemperature: TEMPERATURA_ALVO
 };
 
@@ -45,7 +46,8 @@ let estadoAlerta = {
   sensorOffline: false,
   aquecedorFalha: false,
   oscilacao: false,
-  foraIdeal: false
+  foraIdeal: false,
+  chuva: false
 };
 
 let ultimaLeituraTimestamp = Date.now();
@@ -80,6 +82,24 @@ async function enviarTelegram(mensagem) {
   } catch (erro) {
     console.error("Erro ao enviar Telegram:", erro.message);
     return false;
+  }
+}
+
+async function verificarChuva() {
+  const chuva = !!aquarioStatus.rainDetected;
+
+  if (chuva && !estadoAlerta.chuva) {
+    await enviarTelegram(
+      `🌧️ CHUVA DETECTADA\nO sensor FC-37 detectou chuva no aquário externo.\nMonitore temperatura, nível da água e pH.`
+    );
+    estadoAlerta.chuva = true;
+  }
+
+  if (!chuva && estadoAlerta.chuva) {
+    await enviarTelegram(
+      `☁️ CHUVA ENCERRADA\nO sensor não detecta mais chuva no aquário externo.`
+    );
+    estadoAlerta.chuva = false;
   }
 }
 
@@ -272,6 +292,7 @@ async function verificarTudo() {
   await verificarTemperaturaForaIdeal();
   await verificarAquecedorSemAquecer();
   await verificarOscilacao();
+  await verificarChuva();
 }
 
 setInterval(() => {
@@ -317,7 +338,7 @@ app.get("/api/telegram/test", async (req, res) => {
 });
 
 app.post("/api/temperature", async (req, res) => {
-  const { temperature, heaterOn } = req.body;
+  const { temperature, heaterOn, rain } = req.body;
 
   if (temperature === undefined) {
     return res.status(400).json({
@@ -329,6 +350,10 @@ app.post("/api/temperature", async (req, res) => {
 
   if (heaterOn !== undefined) {
     aquarioStatus.heaterOn = heaterOn;
+  }
+
+  if (rain !== undefined) {
+    aquarioStatus.rainDetected = !!rain;
   }
 
   ultimaLeituraTimestamp = Date.now();
