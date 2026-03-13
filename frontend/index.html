@@ -279,6 +279,98 @@
       color: #d8f5ff;
     }
 
+    .clima-card { padding: 18px; margin-bottom: 18px; }
+
+    .clima-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .clima-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      background:
+        linear-gradient(180deg, rgba(255,200,120,0.14), rgba(90,140,255,0.10)),
+        rgba(19, 28, 42, 0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .clima-info h3 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .clima-info p {
+      margin: 0;
+      font-size: 13px;
+      color: rgba(255,255,255,0.64);
+    }
+
+    .clima-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .clima-box {
+      border-radius: 20px;
+      padding: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+        rgba(19, 28, 42, 0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .clima-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.58);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .clima-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #dff6ff;
+    }
+
+    .clima-risk {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.45;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      color: #e7f4ff;
+    }
+
+    .clima-risk.low {
+      border-color: rgba(116,216,121,0.14);
+      background: linear-gradient(180deg, rgba(92, 168, 98, 0.14), rgba(92, 168, 98, 0.08));
+      color: #d6f9d7;
+    }
+
+    .clima-risk.medium {
+      border-color: rgba(255,191,115,0.14);
+      background: linear-gradient(180deg, rgba(255,191,115,0.14), rgba(255,191,115,0.08));
+      color: #ffe3b9;
+    }
+
+    .clima-risk.high {
+      border-color: rgba(255,135,135,0.14);
+      background: linear-gradient(180deg, rgba(255,135,135,0.14), rgba(255,135,135,0.08));
+      color: #ffd3d3;
+    }
+
     .section-card { padding: 18px; margin-bottom: 18px; }
     .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
 
@@ -370,6 +462,7 @@
       .hero-main { flex-direction: column; }
       .target-box { width: 100%; }
       .mini-grid { grid-template-columns: 1fr; }
+      .clima-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -434,6 +527,42 @@
 
       <div class="rain-banner" id="rainBanner">
         ☁️ Ambiente seco no momento. O sistema continua monitorando possíveis mudanças climáticas.
+      </div>
+    </div>
+
+    <div class="card clima-card">
+      <div class="clima-top">
+        <div class="clima-icon" id="climaIcon">🌤️</div>
+        <div class="clima-info">
+          <h3>Clima externo</h3>
+          <p>Condições em Manilha - Itaboraí - RJ</p>
+        </div>
+      </div>
+
+      <div class="clima-grid">
+        <div class="clima-box">
+          <div class="clima-label">Temperatura externa</div>
+          <div class="clima-value" id="climaTemp">--°C</div>
+        </div>
+
+        <div class="clima-box">
+          <div class="clima-label">Chance de chuva</div>
+          <div class="clima-value" id="climaChuva">--%</div>
+        </div>
+
+        <div class="clima-box">
+          <div class="clima-label">Vento</div>
+          <div class="clima-value" id="climaVento">-- km/h</div>
+        </div>
+
+        <div class="clima-box">
+          <div class="clima-label">Queda prevista</div>
+          <div class="clima-value" id="climaQueda">--°C</div>
+        </div>
+      </div>
+
+      <div class="clima-risk low" id="climaRisco">
+        ✅ Clima externo estável no momento. Baixo risco de impacto térmico no aquário.
       </div>
     </div>
 
@@ -516,6 +645,13 @@
     const rainBanner = document.getElementById("rainBanner");
     const rainIcon = document.getElementById("rainIcon");
 
+    const climaTemp = document.getElementById("climaTemp");
+    const climaChuva = document.getElementById("climaChuva");
+    const climaVento = document.getElementById("climaVento");
+    const climaQueda = document.getElementById("climaQueda");
+    const climaRisco = document.getElementById("climaRisco");
+    const climaIcon = document.getElementById("climaIcon");
+
     function normalizarParaCelsius(valor) {
       const numero = Number(valor);
       if (Number.isNaN(numero)) return 0;
@@ -582,90 +718,3 @@
         rainStatusBox.classList.remove("rain-off");
         rainStatusBox.classList.add("rain-on");
         rainStatusValue.innerText = "Chuva detectada";
-        rainStatusDesc.innerText = "Sensor FC-37 molhado";
-        rainBanner.innerText = "🌧️ Chuva detectada no aquário externo. Monitore temperatura, nível da água e possíveis oscilações.";
-        rainIcon.innerText = "🌧️";
-      } else {
-        rainStatusBox.classList.remove("rain-on");
-        rainStatusBox.classList.add("rain-off");
-        rainStatusValue.innerText = "Sem chuva";
-        rainStatusDesc.innerText = "Nenhuma precipitação detectada";
-        rainBanner.innerText = "☁️ Ambiente seco no momento. O sistema continua monitorando possíveis mudanças climáticas.";
-        rainIcon.innerText = "☁️";
-      }
-    }
-
-    function atualizarVisual(temperatura, heaterOn) {
-      const temperaturaC = normalizarParaCelsius(temperatura);
-
-      tempValue.innerText = temperaturaC.toFixed(1);
-      sensorTempValue.innerText = temperaturaC.toFixed(1) + "°C";
-      heaterStatus.innerText = heaterOn ? "🔥 Aquecedor ligado" : "❄️ Aquecedor desligado";
-      heaterMini.innerText = heaterOn ? "Ligado" : "Desligado";
-      updatedAt.innerText = "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
-
-      if (temperaturaC < ALERTA_BAIXO) {
-        statusTag.innerText = "Frio crítico";
-        statusTag.style.background = "linear-gradient(180deg, rgba(255,191,115,0.18), rgba(255,191,115,0.10))";
-        statusTag.style.color = "#ffe0b3";
-        messageBox.innerText = "🚨 Temperatura abaixo do limite crítico. A água está muito fria e precisa de atenção imediata.";
-        messageBox.style.background = "linear-gradient(180deg, rgba(255,191,115,0.14), rgba(255,191,115,0.08))";
-        messageBox.style.color = "#ffe3b9";
-      } else if (temperaturaC > ALERTA_ALTO) {
-        statusTag.innerText = "Superaquecimento";
-        statusTag.style.background = "linear-gradient(180deg, rgba(255,135,135,0.18), rgba(255,135,135,0.10))";
-        statusTag.style.color = "#ffd1d1";
-        messageBox.innerText = "🔥 Temperatura acima do limite seguro. Existe risco de superaquecimento no aquário.";
-        messageBox.style.background = "linear-gradient(180deg, rgba(255,135,135,0.14), rgba(255,135,135,0.08))";
-        messageBox.style.color = "#ffd3d3";
-      } else {
-        statusTag.innerText = "Faixa normal";
-        statusTag.style.background = "linear-gradient(180deg, rgba(123,219,128,0.18), rgba(90,165,94,0.12))";
-        statusTag.style.color = "#c6f5be";
-        messageBox.innerText = heaterOn
-          ? "✅ Sistema monitorado. Temperatura dentro da faixa e aquecedor em operação."
-          : "✅ Sistema monitorado. Temperatura dentro da faixa atual.";
-        messageBox.style.background = "linear-gradient(180deg, rgba(92,168,98,0.14), rgba(92,168,98,0.08))";
-        messageBox.style.color = "#d6f9d7";
-      }
-    }
-
-    async function atualizarStatus() {
-      const resposta = await fetch(`${API_BASE}/api/status`);
-      if (!resposta.ok) throw new Error("Falha ao buscar status");
-      const dados = await resposta.json();
-      atualizarVisual(dados.temperature, !!dados.heaterOn);
-      atualizarVisualChuva(!!dados.rainDetected);
-      onlineStatus.innerText = "● Online";
-    }
-
-    async function atualizarGrafico() {
-      const resposta = await fetch(`${API_BASE}/api/history`);
-      if (!resposta.ok) throw new Error("Falha ao buscar histórico");
-      const historico = await resposta.json();
-
-      const labels = historico.map(item => item.time);
-      const temperaturas = historico.map(item => normalizarParaCelsius(item.temperature));
-
-      chart.data.labels = labels;
-      chart.data.datasets[0].data = temperaturas;
-      chart.data.datasets[1].data = labels.map(() => TEMPERATURA_ALVO);
-      chart.data.datasets[2].data = labels.map(() => ALERTA_BAIXO);
-      chart.update();
-    }
-
-    async function atualizarTudo() {
-      try {
-        await atualizarStatus();
-        await atualizarGrafico();
-      } catch (e) {
-        console.error(e);
-        onlineStatus.innerText = "● Offline";
-      }
-    }
-
-    atualizarTudo();
-    setInterval(atualizarTudo, 3000);
-  </script>
-</body>
-</html>
