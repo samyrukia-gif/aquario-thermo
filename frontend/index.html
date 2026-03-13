@@ -616,59 +616,64 @@
       return numero;
     }
 
-    const ctx = document.getElementById("graficoTemperatura").getContext("2d");
+    const canvas = document.getElementById("graficoTemperatura");
+    let chart = null;
 
-    const chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: "Temperatura real",
-            data: [],
-            borderColor: "#56b8ff",
-            backgroundColor: "rgba(86,184,255,0.18)",
-            borderWidth: 3,
-            tension: 0.38,
-            fill: true,
-            pointRadius: 0
-          },
-          {
-            label: "Meta 27 °C",
-            data: [],
-            borderColor: "#6be36b",
-            borderWidth: 2,
-            borderDash: [6, 6],
-            pointRadius: 0,
-            fill: false
-          },
-          {
-            label: "Crítico baixo 22 °C",
-            data: [],
-            borderColor: "#ffbe63",
-            borderWidth: 2,
-            borderDash: [6, 6],
-            pointRadius: 0,
-            fill: false
-          }
-        ]
-      },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            ticks: { color: "rgba(255,255,255,0.52)" },
-            grid: { color: "rgba(255,255,255,0.06)" }
-          },
-          y: {
-            ticks: { color: "rgba(255,255,255,0.52)" },
-            grid: { color: "rgba(255,255,255,0.06)" }
+    if (window.Chart && canvas) {
+      const ctx = canvas.getContext("2d");
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Temperatura real",
+              data: [],
+              borderColor: "#56b8ff",
+              backgroundColor: "rgba(86,184,255,0.18)",
+              borderWidth: 3,
+              tension: 0.38,
+              fill: true,
+              pointRadius: 0
+            },
+            {
+              label: "Meta 27 °C",
+              data: [],
+              borderColor: "#6be36b",
+              borderWidth: 2,
+              borderDash: [6, 6],
+              pointRadius: 0,
+              fill: false
+            },
+            {
+              label: "Crítico baixo 22 °C",
+              data: [],
+              borderColor: "#ffbe63",
+              borderWidth: 2,
+              borderDash: [6, 6],
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: "rgba(255,255,255,0.52)" },
+              grid: { color: "rgba(255,255,255,0.06)" }
+            },
+            y: {
+              ticks: { color: "rgba(255,255,255,0.52)" },
+              grid: { color: "rgba(255,255,255,0.06)" }
+            }
           }
         }
-      }
-    });
+      });
+    }
 
     function atualizarVisualChuva(rainDetected) {
       if (rainDetected) {
@@ -694,3 +699,128 @@
         climaChuva.innerText = "--%";
         climaVento.innerText = "-- km/h";
         climaQueda.innerText = "--°C";
+        climaRisco.className = "clima-risk";
+        climaRisco.innerText = "ℹ️ Dados climáticos indisponíveis no momento.";
+        climaIcon.innerText = "🌤️";
+        return;
+      }
+
+      climaTemp.innerText = Number(clima.temperaturaExterna).toFixed(1) + "°C";
+      climaChuva.innerText = Number(clima.probabilidadeChuva || 0).toFixed(0) + "%";
+      climaVento.innerText = Number(clima.vento || 0).toFixed(1) + " km/h";
+      climaQueda.innerText = Number(clima.quedaPrevista || 0).toFixed(1) + "°C";
+
+      let risco = "low";
+      let mensagem = "✅ Clima externo estável no momento. Baixo risco de impacto térmico no aquário.";
+      let icone = "🌤️";
+
+      if ((clima.probabilidadeChuva || 0) >= 60 || (clima.quedaPrevista || 0) >= 3) {
+        risco = "medium";
+        mensagem = "⚠️ Atenção ao clima externo. Existe chance de chuva ou queda térmica nas próximas horas.";
+        icone = "🌧️";
+      }
+
+      if ((clima.temperaturaExterna || 0) <= 20 || (clima.quedaPrevista || 0) >= 5) {
+        risco = "high";
+        mensagem = "🚨 Risco climático elevado. O aquário externo pode sofrer resfriamento importante.";
+        icone = "🌬️";
+      }
+
+      climaRisco.className = `clima-risk ${risco}`;
+      climaRisco.innerText = mensagem;
+      climaIcon.innerText = icone;
+    }
+
+    function atualizarVisual(temperatura, heaterOn) {
+      const temperaturaC = normalizarParaCelsius(temperatura);
+
+      tempValue.innerText = temperaturaC.toFixed(1);
+      sensorTempValue.innerText = temperaturaC.toFixed(1) + "°C";
+      heaterStatus.innerText = heaterOn ? "🔥 Aquecedor ligado" : "❄️ Aquecedor desligado";
+      heaterMini.innerText = heaterOn ? "Ligado" : "Desligado";
+      updatedAt.innerText = "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
+
+      if (temperaturaC < ALERTA_BAIXO) {
+        statusTag.innerText = "Frio crítico";
+        statusTag.style.background = "linear-gradient(180deg, rgba(255,191,115,0.18), rgba(255,191,115,0.10))";
+        statusTag.style.color = "#ffe0b3";
+        messageBox.innerText = "🚨 Temperatura abaixo do limite crítico. A água está muito fria e precisa de atenção imediata.";
+        messageBox.style.background = "linear-gradient(180deg, rgba(255,191,115,0.14), rgba(255,191,115,0.08))";
+        messageBox.style.color = "#ffe3b9";
+      } else if (temperaturaC > ALERTA_ALTO) {
+        statusTag.innerText = "Superaquecimento";
+        statusTag.style.background = "linear-gradient(180deg, rgba(255,135,135,0.18), rgba(255,135,135,0.10))";
+        statusTag.style.color = "#ffd1d1";
+        messageBox.innerText = "🔥 Temperatura acima do limite seguro. Existe risco de superaquecimento no aquário.";
+        messageBox.style.background = "linear-gradient(180deg, rgba(255,135,135,0.14), rgba(255,135,135,0.08))";
+        messageBox.style.color = "#ffd3d3";
+      } else {
+        statusTag.innerText = "Faixa normal";
+        statusTag.style.background = "linear-gradient(180deg, rgba(123,219,128,0.18), rgba(90,165,94,0.12))";
+        statusTag.style.color = "#c6f5be";
+        messageBox.innerText = heaterOn
+          ? "✅ Sistema monitorado. Temperatura dentro da faixa e aquecedor em operação."
+          : "✅ Sistema monitorado. Temperatura dentro da faixa atual.";
+        messageBox.style.background = "linear-gradient(180deg, rgba(92,168,98,0.14), rgba(92,168,98,0.08))";
+        messageBox.style.color = "#d6f9d7";
+      }
+    }
+
+    async function atualizarStatus() {
+      try {
+        const resposta = await fetch(`${API_BASE}/api/status`);
+        if (!resposta.ok) throw new Error("Falha ao buscar status");
+        const dados = await resposta.json();
+        atualizarVisual(dados.temperature, !!dados.heaterOn);
+        atualizarVisualChuva(!!dados.rainDetected);
+        onlineStatus.innerText = "● Online";
+      } catch (e) {
+        console.error("Erro status:", e);
+        onlineStatus.innerText = "● Offline";
+      }
+    }
+
+    async function atualizarGrafico() {
+      if (!chart) return;
+
+      try {
+        const resposta = await fetch(`${API_BASE}/api/history`);
+        if (!resposta.ok) throw new Error("Falha ao buscar histórico");
+        const historico = await resposta.json();
+
+        const labels = historico.map(item => item.time);
+        const temperaturas = historico.map(item => normalizarParaCelsius(item.temperature));
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = temperaturas;
+        chart.data.datasets[1].data = labels.map(() => TEMPERATURA_ALVO);
+        chart.data.datasets[2].data = labels.map(() => ALERTA_BAIXO);
+        chart.update();
+      } catch (e) {
+        console.error("Erro gráfico:", e);
+      }
+    }
+
+    async function atualizarClima() {
+      try {
+        const resposta = await fetch(`${API_BASE}/api/clima`);
+        if (!resposta.ok) throw new Error("Falha ao buscar clima");
+        const dados = await resposta.json();
+        atualizarVisualClima(dados.clima);
+      } catch (e) {
+        console.error("Erro clima:", e);
+        atualizarVisualClima(null);
+      }
+    }
+
+    async function atualizarTudo() {
+      await atualizarStatus();
+      await atualizarGrafico();
+      await atualizarClima();
+    }
+
+    atualizarTudo();
+    setInterval(atualizarTudo, 3000);
+  </script>
+</body>
+</html>
