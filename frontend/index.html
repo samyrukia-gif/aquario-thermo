@@ -216,9 +216,9 @@
       line-height: 1.45;
     }
 
-    .rain-card { padding: 18px; margin-bottom: 18px; }
+    .rain-card, .clima-card { padding: 18px; margin-bottom: 18px; }
 
-    .rain-wrap {
+    .rain-wrap, .clima-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -226,9 +226,9 @@
       flex-wrap: wrap;
     }
 
-    .rain-left { display: flex; align-items: center; gap: 14px; }
+    .rain-left, .clima-left { display: flex; align-items: center; gap: 14px; }
 
-    .rain-icon {
+    .rain-icon, .clima-icon {
       width: 58px;
       height: 58px;
       border-radius: 18px;
@@ -241,8 +241,8 @@
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .rain-info h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
-    .rain-info p { margin: 0; font-size: 13px; color: rgba(255,255,255,0.64); }
+    .rain-info h3, .clima-info h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+    .rain-info p, .clima-info p { margin: 0; font-size: 13px; color: rgba(255,255,255,0.64); }
 
     .rain-status-box {
       min-width: 180px;
@@ -268,55 +268,22 @@
     .rain-on .rain-status-value { color: #7fdcff; }
     .rain-off .rain-status-value { color: #d9e6f2; }
 
-    .rain-banner {
+    .rain-banner, .clima-risk {
       margin-top: 14px;
       padding: 14px 16px;
       border-radius: 18px;
       font-size: 14px;
       line-height: 1.45;
-      border: 1px solid rgba(127, 220, 255, 0.14);
-      background: linear-gradient(180deg, rgba(88, 160, 205, 0.14), rgba(88, 160, 205, 0.08));
-      color: #d8f5ff;
-    }
-
-    .clima-card { padding: 18px; margin-bottom: 18px; }
-
-    .clima-top {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-
-    .clima-icon {
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      font-size: 28px;
-      background:
-        linear-gradient(180deg, rgba(255,200,120,0.14), rgba(90,140,255,0.10)),
-        rgba(19, 28, 42, 0.72);
       border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .clima-info h3 {
-      margin: 0 0 4px;
-      font-size: 17px;
-      font-weight: 700;
-    }
-
-    .clima-info p {
-      margin: 0;
-      font-size: 13px;
-      color: rgba(255,255,255,0.64);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      color: #e7f4ff;
     }
 
     .clima-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
+      margin-top: 16px;
     }
 
     .clima-box {
@@ -340,17 +307,6 @@
       font-size: 24px;
       font-weight: 800;
       color: #dff6ff;
-    }
-
-    .clima-risk {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      font-size: 14px;
-      line-height: 1.45;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-      color: #e7f4ff;
     }
 
     .clima-risk.low {
@@ -461,8 +417,7 @@
       .temp-unit { font-size: 24px; }
       .hero-main { flex-direction: column; }
       .target-box { width: 100%; }
-      .mini-grid { grid-template-columns: 1fr; }
-      .clima-grid { grid-template-columns: 1fr; }
+      .mini-grid, .clima-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -532,10 +487,12 @@
 
     <div class="card clima-card">
       <div class="clima-top">
-        <div class="clima-icon" id="climaIcon">🌤️</div>
-        <div class="clima-info">
-          <h3>Clima externo</h3>
-          <p>Condições em Manilha - Itaboraí - RJ</p>
+        <div class="clima-left">
+          <div class="clima-icon" id="climaIcon">🌤️</div>
+          <div class="clima-info">
+            <h3>Clima externo</h3>
+            <p>Condições em Manilha - Itaboraí - RJ</p>
+          </div>
         </div>
       </div>
 
@@ -718,3 +675,22 @@
         rainStatusBox.classList.remove("rain-off");
         rainStatusBox.classList.add("rain-on");
         rainStatusValue.innerText = "Chuva detectada";
+        rainStatusDesc.innerText = "Sensor FC-37 molhado";
+        rainBanner.innerText = "🌧️ Chuva detectada no aquário externo. Monitore temperatura, nível da água e possíveis oscilações.";
+        rainIcon.innerText = "🌧️";
+      } else {
+        rainStatusBox.classList.remove("rain-on");
+        rainStatusBox.classList.add("rain-off");
+        rainStatusValue.innerText = "Sem chuva";
+        rainStatusDesc.innerText = "Nenhuma precipitação detectada";
+        rainBanner.innerText = "☁️ Ambiente seco no momento. O sistema continua monitorando possíveis mudanças climáticas.";
+        rainIcon.innerText = "☁️";
+      }
+    }
+
+    function atualizarVisualClima(clima) {
+      if (!clima || clima.temperaturaExterna === null) {
+        climaTemp.innerText = "--°C";
+        climaChuva.innerText = "--%";
+        climaVento.innerText = "-- km/h";
+        climaQueda.innerText = "--°C";
