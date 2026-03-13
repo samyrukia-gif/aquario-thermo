@@ -159,17 +159,18 @@ async function verificarSensorOffline() {
 
   if (semLeitura && !estadoAlerta.sensorOffline) {
     await enviarTelegram(
-  `⚡ POSSÍVEL FALTA DE ENERGIA
+`⚡ POSSÍVEL FALTA DE ENERGIA
 
 O sistema parou de enviar dados do aquário.
 
 Isso pode indicar:
-* falta de energia
-* queda do WiFi
-* desligamento da ESP32
+• falta de energia
+• queda do WiFi
+• desligamento da ESP32
 
 Verifique o aquário imediatamente.`
-);
+    );
+
     estadoAlerta.sensorOffline = true;
   }
 
@@ -312,12 +313,12 @@ async function verificarPrevisao() {
 
 async function buscarClimaAvancado() {
   try {
-    const url = https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,windspeed_10m,weathercode&hourly=temperature_2m,precipitation_probability&forecast_days=1&timezone=America%2FSao_Paulo;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,windspeed_10m,weathercode&hourly=temperature_2m,precipitation_probability&forecast_days=1&timezone=America%2FSao_Paulo`;
 
     const resposta = await fetch(url);
     const dados = await resposta.json();
 
-    const atual = dados.current_weather;
+    const atual = dados.current;
     const temperaturas = dados.hourly?.temperature_2m || [];
     const chuvas = dados.hourly?.precipitation_probability || [];
 
@@ -335,8 +336,8 @@ async function buscarClimaAvancado() {
     }
 
     climaAtual = {
-      temperaturaExterna: atual?.temperature ?? null,
-      vento: atual?.windspeed ?? null,
+      temperaturaExterna: atual?.temperature_2m ?? null,
+      vento: atual?.windspeed_10m ?? null,
       codigoClima: atual?.weathercode ?? null,
       probabilidadeChuva: probabilidadeMaximaChuva,
       quedaPrevista
@@ -492,15 +493,17 @@ app.post("/api/temperature", async (req, res) => {
   if (rain !== undefined) {
     aquarioStatus.rainDetected = !!rain;
   }
-if (estadoAlerta.sensorOffline) {
-  await enviarTelegram(
-    `✅ ENERGIA RESTAURADA
+
+  if (estadoAlerta.sensorOffline) {
+    await enviarTelegram(
+`✅ ENERGIA RESTAURADA
 
 O sistema do aquário voltou a enviar dados normalmente.`
-  );
+    );
 
-  estadoAlerta.sensorOffline = false;
-}
+    estadoAlerta.sensorOffline = false;
+  }
+
   ultimaLeituraTimestamp = Date.now();
 
   historicoTemperaturas.push({
