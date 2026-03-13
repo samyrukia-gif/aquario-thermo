@@ -159,8 +159,17 @@ async function verificarSensorOffline() {
 
   if (semLeitura && !estadoAlerta.sensorOffline) {
     await enviarTelegram(
-      `🚨 SENSOR OFFLINE\nO sistema está sem receber leitura de temperatura há vários minutos.\nVerifique o sensor ou a conexão da ESP32.`
-    );
+  `⚡ POSSÍVEL FALTA DE ENERGIA
+
+O sistema parou de enviar dados do aquário.
+
+Isso pode indicar:
+* falta de energia
+* queda do WiFi
+* desligamento da ESP32
+
+Verifique o aquário imediatamente.`
+);
     estadoAlerta.sensorOffline = true;
   }
 
@@ -483,7 +492,15 @@ app.post("/api/temperature", async (req, res) => {
   if (rain !== undefined) {
     aquarioStatus.rainDetected = !!rain;
   }
+if (estadoAlerta.sensorOffline) {
+  await enviarTelegram(
+    `✅ ENERGIA RESTAURADA
 
+O sistema do aquário voltou a enviar dados normalmente.`
+  );
+
+  estadoAlerta.sensorOffline = false;
+}
   ultimaLeituraTimestamp = Date.now();
 
   historicoTemperaturas.push({
